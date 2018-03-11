@@ -1,0 +1,20 @@
+D:\kira-\ObjectMoving\ObjectMoving\obj\Debug\ObjectMoving.csprojResolveAssemblyReference.cache
+D:\kira-\ObjectMoving\ObjectMoving\obj\Debug\ObjectMoving.FormView.resources
+D:\kira-\ObjectMoving\ObjectMoving\obj\Debug\ObjectMoving.Properties.Resources.resources
+D:\kira-\ObjectMoving\ObjectMoving\obj\Debug\ObjectMoving.csproj.GenerateResource.Cache
+D:\kira-\ObjectMoving\ObjectMoving\obj\Debug\ObjectMoving.csproj.CoreCompileInputs.cache
+D:\kira-\ObjectMoving\ObjectMoving\bin\Debug\ObjectMoving.exe.config
+D:\kira-\ObjectMoving\ObjectMoving\bin\Debug\ObjectMoving.exe
+D:\kira-\ObjectMoving\ObjectMoving\bin\Debug\ObjectMoving.pdb
+D:\kira-\ObjectMoving\ObjectMoving\obj\Debug\ObjectMoving.exe
+D:\kira-\ObjectMoving\ObjectMoving\obj\Debug\ObjectMoving.pdb
+D:\kira-\Visual Studio Projects\ObjectMoving\ObjectMoving\bin\Debug\ObjectMoving.exe.config
+D:\kira-\Visual Studio Projects\ObjectMoving\ObjectMoving\bin\Debug\ObjectMoving.exe
+D:\kira-\Visual Studio Projects\ObjectMoving\ObjectMoving\bin\Debug\ObjectMoving.pdb
+D:\kira-\Visual Studio Projects\ObjectMoving\ObjectMoving\obj\Debug\ObjectMoving.csprojResolveAssemblyReference.cache
+D:\kira-\Visual Studio Projects\ObjectMoving\ObjectMoving\obj\Debug\ObjectMoving.Properties.Resources.resources
+D:\kira-\Visual Studio Projects\ObjectMoving\ObjectMoving\obj\Debug\ObjectMoving.csproj.GenerateResource.Cache
+D:\kira-\Visual Studio Projects\ObjectMoving\ObjectMoving\obj\Debug\ObjectMoving.csproj.CoreCompileInputs.cache
+D:\kira-\Visual Studio Projects\ObjectMoving\ObjectMoving\obj\Debug\ObjectMoving.exe
+D:\kira-\Visual Studio Projects\ObjectMoving\ObjectMoving\obj\Debug\ObjectMoving.pdb
+D:\kira-\Visual Studio Projects\ObjectMoving\ObjectMoving\obj\Debug\ObjectMoving.ObjectMoving.resources
