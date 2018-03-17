@@ -72,6 +72,8 @@ def updatePosition(x,y,xMotion,yMotion):
     y = y + yMotion
     xpos = int(x)
     ypos = int(y)
+
+    sensors(xpos, ypos);
     return xpos,ypos,x,y
 
 
@@ -114,27 +116,33 @@ def adjustPosition(directionAngle,wall,x,y):
 # If it gets stuck in a wall, which it sometimes does on corners, I move it a little in the right direction
 def stuck(directionAngle,wall,x,y):
     if directionAngle >= 180 and wallList[wall][0] == wallList[wall][2]:
-        y= y+radius/2
+        y= y+radius
     if directionAngle < 180 and wallList[wall][0] == wallList[wall][2]:
-        y = y -radius/2
+        y = y -radius
     if (directionAngle > 270 or (directionAngle > 0 and directionAngle < 90)) and wallList[wall][1] == wallList[wall][3]:
-        x = x-radius/2
+        x = x-radius
     if (directionAngle <= 270 and directionAngle > 90) and wallList[wall][1] == wallList[wall][3]:
-        x= x+radius/2
+        x= x+radius
     return x,y
-  
-
-        
-    
-        
-    
+      
     
 angle = updateAngle(x,y,x+1,y)
 rotx, roty = calcDirection(x,y)
 stuckInWall = 0;
 
 
+# Sensor Inputs, returns the endpoints of the sensor lines
+def sensors(centerX, centerY):
+    sensorEndpoints = []
 
+    for i in range(12):
+        point1 = centerX, centerY
+        point2 = centerX + 100 * math.cos(i * 30*3.14/180), centerY + 100 * math.sin(i * 30 * 3.14/180)
+
+        pygame.draw.line(screen,  (0, 0, 255), point1, point2)
+        
+        sensorEndpoints.append([ centerX + 100 * math.cos(i * 30*3.14/180),  centerY + 100 * math.sin(i * 30 * 3.14/180)])
+    return sensorEndpoints
 
 
 # Loop until the user clicks the close button.
@@ -154,6 +162,7 @@ while not done:
                 x,y = stuck(directionAngle,i,x,y)
                 xMotion,yMotion,directionAngle = changeDirection(xMotion,yMotion,directionAngle,i)
                 updatePosition(x,y,xMotion,yMotion)
+
                 break
 
             if(stuckInWall > 0 and i <= 3):
@@ -205,9 +214,4 @@ while not done:
 # Be IDLE friendly. If you forget this line, the program will 'hang'
 # on exit.
 pygame.quit()
-
-
-
-
-
 
