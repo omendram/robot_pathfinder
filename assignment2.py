@@ -4,6 +4,7 @@ import random, sys, time, math, numpy, shapely
 from numpy import linalg
 from random import randint
 from shapely.geometry import LineString
+from random import *
  
 # Initialize the game engine
 pygame.init()
@@ -23,7 +24,7 @@ pygame.display.set_caption("Maze")
 clock = pygame.time.Clock()
 
 angle = 50
-speed = 5
+speed = 2
 
 
 x = 74
@@ -76,6 +77,9 @@ def updatePosition(x,y,xMotion,yMotion,angle):
     ypos = int(y)
 
     sensors(xpos,ypos,angle)
+
+    # Maybe plot points later
+
     return xpos,ypos,x,y
 
 
@@ -139,7 +143,7 @@ def sensors(centerX, centerY,angle):
         point2 = centerX + distance * math.cos(i * 30*3.14/180+angle), centerY + distance * math.sin(i * 30 * 3.14/180+angle)
         
 
-        pygame.draw.line(screen,  BLACK, point1, point2,1)        
+        pygame.draw.line(screen,  BLACK, point1, point2, 1)        
         sensorEndpoints.append([ centerX + 100 * math.cos(i * 30*3.14/180+angle),  centerY + 100 * math.sin(i * 30 * 3.14/180+angle)])
     return sensorEndpoints
 
@@ -170,10 +174,12 @@ def getSensorDistance(sensor,x,y):
             if distance < closestWallDistance:
                 closestWallDistance = distance
                 closestWall = i
-            
-    return closestWallDistance
-        
 
+    # Introduce Noise
+
+    closestWallDistance = randint(80, 120)*closestWallDistance*(1/100);
+
+    return closestWallDistance
 
         
     
