@@ -144,7 +144,7 @@ def sensors(centerX, centerY,angle):
         
 
         pygame.draw.line(screen,  BLACK, point1, point2, 1)        
-        sensorEndpoints.append([ centerX + 100 * math.cos(i * 30*3.14/180+angle),  centerY + 100 * math.sin(i * 30 * 3.14/180+angle)])
+        sensorEndpoints.append([ centerX + distance * math.cos(i * 30*3.14/180+angle),  centerY + distance * math.sin(i * 30 * 3.14/180+angle)])
     return sensorEndpoints
 
 
