@@ -1,8 +1,9 @@
 # Import a library of functions called 'pygame'
 import pygame
-import random, sys, time, math, numpy
+import random, sys, time, math, numpy, shapely
 from numpy import linalg
 from random import randint
+from shapely.geometry import LineString
  
 # Initialize the game engine
 pygame.init()
@@ -22,7 +23,7 @@ pygame.display.set_caption("Maze")
 clock = pygame.time.Clock()
 
 angle = 50
-speed = 3
+speed = 5
 
 
 x = 74
@@ -35,6 +36,7 @@ roty=0
 xpos=75
 ypos=60
 directionAngle =0
+
 #    or (y0 >= y1-50 and y0 <= y2+50) wallList = [[10,10,1070,10],[10,10,10,710],[10,710,1070,710],[1070,10,1070,710],[265,10,265,238],[269,10,269,234],[269,234,536,234],
  #          [265,238,532,238],[532,238,532,470],[536,238,536,474],[532,470,265,470],[536,474,265,474],[799,710,799,236],[803,710,803,236],[799,236,803,236]]
 wallList = [[10,10,1070,10],[10,10,10,710],[10,710,1070,710],[1070,10,1070,710],[267,10,267,236],[534,236,534,472],[267,472,534,472],[801,236,801,710]]
@@ -67,13 +69,13 @@ def CheckCollision(wall,xpos1,ypos1):
         return False
 
 #updates the position of the robot based on its motion
-def updatePosition(x,y,xMotion,yMotion):
+def updatePosition(x,y,xMotion,yMotion,angle):
     x = x + xMotion
     y = y + yMotion
     xpos = int(x)
     ypos = int(y)
 
-    sensors(xpos, ypos);
+    sensors(xpos,ypos,angle)
     return xpos,ypos,x,y
 
 
@@ -124,25 +126,63 @@ def stuck(directionAngle,wall,x,y):
     if (directionAngle <= 270 and directionAngle > 90) and wallList[wall][1] == wallList[wall][3]:
         x= x+radius
     return x,y
-      
+
+# Sensor Inputs, returns the endpoints of the sensor lines
+def sensors(centerX, centerY,angle):
+    sensorEndpoints = []
+
+    for i in range(12):
+        point1 = centerX, centerY
+        distance = getSensorDistance(i,centerX,centerY)
+        #print(i , " " ,distance)
+        
+        point2 = centerX + distance * math.cos(i * 30*3.14/180+angle), centerY + distance * math.sin(i * 30 * 3.14/180+angle)
+        
+
+        pygame.draw.line(screen,  BLACK, point1, point2,1)        
+        sensorEndpoints.append([ centerX + 100 * math.cos(i * 30*3.14/180+angle),  centerY + 100 * math.sin(i * 30 * 3.14/180+angle)])
+    return sensorEndpoints
+
+
+def getSensorDistance(sensor,x,y):
+    closestWall = 0
+    closestWallDistance =1000
+    distance = 0
+    
+    
+    for i in range(0,8):
+        
+        x1 = wallList[i][0]
+        y1 = wallList[i][1]
+        x2 = wallList[i][2]
+        y2 = wallList[i][3]
+
+ #       pygame.draw.line(screen,BLACK,(x,y),(x + 1000 * math.cos(sensor * 30*3.14/180+angle),y + 1000 * math.sin(sensor * 30 * 3.14/180+angle)))
+ 
+        line1 = LineString([(x1,y1), (x2,y2)])
+        line2 = LineString([(x,y), (x + 1000 * math.cos(sensor * 30*3.14/180+angle), y + 1000 * math.sin(sensor * 30 * 3.14/180+angle))])
+        point = line1.intersection(line2)
+        point = numpy.array(point)
+        
+        if len(point) > 0:
+            distance = ((point[0] - x)**2 + (point[1] - y)**2)**(1/2)
+            #print(distance, " " , sensor)
+            if distance < closestWallDistance:
+                closestWallDistance = distance
+                closestWall = i
+            
+    return closestWallDistance
+        
+
+
+        
     
 angle = updateAngle(x,y,x+1,y)
 rotx, roty = calcDirection(x,y)
 stuckInWall = 0;
 
 
-# Sensor Inputs, returns the endpoints of the sensor lines
-def sensors(centerX, centerY):
-    sensorEndpoints = []
 
-    for i in range(12):
-        point1 = centerX, centerY
-        point2 = centerX + 100 * math.cos(i * 30*3.14/180), centerY + 100 * math.sin(i * 30 * 3.14/180)
-
-        pygame.draw.line(screen,  (0, 0, 255), point1, point2)
-        
-        sensorEndpoints.append([ centerX + 100 * math.cos(i * 30*3.14/180),  centerY + 100 * math.sin(i * 30 * 3.14/180)])
-    return sensorEndpoints
 
 
 # Loop until the user clicks the close button.
@@ -161,29 +201,12 @@ while not done:
             if (stuckInWall > 0 and i >3):
                 x,y = stuck(directionAngle,i,x,y)
                 xMotion,yMotion,directionAngle = changeDirection(xMotion,yMotion,directionAngle,i)
-                updatePosition(x,y,xMotion,yMotion)
-
+                updatePosition(x,y,xMotion,yMotion,angle)
                 break
-
-            if(stuckInWall > 0 and i <= 3):
-                if i ==0:
-                    x = x + radius/2
-                    y = y + radius/2
-                    
-                if i  == 1:
-                    x = x - radius/2
-                    y = y - radius/2
-                if i == 2:
-                    x = x - radius/2
-                    y = y - radius/2
-                if i == 3:
-                    x = x + radius/2
-                    y = y + radius/2
-                break   
+            
             stuckInWall = 3
             x,y = adjustPosition(directionAngle,i,x,y)
             xMotion, yMotion,directionAngle = findNextDirection(xMotion,yMotion,directionAngle,d,i)
-            
             break
 
 
@@ -193,11 +216,13 @@ while not done:
     oldx = x
     oldy = y
     
-    xpos,ypos,x,y = updatePosition(x,y,xMotion,yMotion)
+    xpos,ypos,x,y = updatePosition(x,y,xMotion,yMotion,angle)
     angle = updateAngle(oldx,oldy,x,y)
     rotx,roty= calcDirection(x,y) # this is for the pointer
 
-    circle = pygame.draw.circle(screen, PINK , (xpos,ypos), radius,0)
+
+
+    circle = pygame.draw.circle(screen, WHITE , (xpos,ypos), radius,0)
     circle = pygame.draw.circle(screen, BLACK , (xpos,ypos), radius,2)
     line = pygame.draw.line(screen,BLACK, (xpos,ypos),(rotx, roty),2)
 
@@ -214,4 +239,9 @@ while not done:
 # Be IDLE friendly. If you forget this line, the program will 'hang'
 # on exit.
 pygame.quit()
+
+
+
+
+
 
