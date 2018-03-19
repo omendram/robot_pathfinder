@@ -153,10 +153,27 @@ def sensors(centerX, centerY):
     for i in range(12):
         point1 = centerX, centerY
         distance = getSensorDistance(i,centerX,centerY)
-        point2 = centerX + distance * math.cos(i * 30*3.14/180+ math.radians(angle)), centerY + distance * math.sin(i * 30 * 3.14/180+math.radians(angle))
-        pygame.draw.line(screen,  BLACK, point1, point2, 1)        
-        sensorEndpoints.append([ centerX + distance * math.cos(i * 30*3.14/180+angle),  centerY + distance * math.sin(i * 30 * 3.14/180+angle)])
+        point2 = centerX + distance[0] * math.cos(i * 30*3.14/180+ math.radians(angle)), centerY + distance[0] * math.sin(i * 30 * 3.14/180+math.radians(angle))
+        pygame.draw.line(screen,  BLACK, point1, point2, 1)
+        sensorEndpoints.append([ centerX + distance[0] * math.cos(i * 30*3.14/180+math.radians(angle)),  centerY + distance[0] * math.sin(i * 30 * 3.14/180+math.radians(angle)), math.radians(angle) ,distance[1]])
+    
+    centerXYEstimatesFromCensor(sensorEndpoints)
     return sensorEndpoints
+
+
+# Return estimates of X and Y based on the sensor readings, including the noise
+# Use this along with odometry estimates to feed into KF and determine the position of the robot
+def centerXYEstimatesFromCensor(sensorEndpoints):
+    estimatedXY = []
+
+    for i in range(12):
+        _x = sensorEndpoints[i][0] - sensorEndpoints[i][3]*math.cos(i * 30*3.14/180+sensorEndpoints[i][2])
+        _y = sensorEndpoints[i][1] - sensorEndpoints[i][3]*math.sin(i * 30*3.14/180+sensorEndpoints[i][2])
+        estimatedXY.append([_x, _y])
+
+        #print(_x, " - ", _y)
+
+    return estimatedXY
 
 
 def getSensorDistance(sensor,x,y):
@@ -185,10 +202,7 @@ def getSensorDistance(sensor,x,y):
                 closestWall = i
 
     # Introduce Noise
-
-    closestWallDistance = randint(90, 110)*closestWallDistance*(1/100);
-
-    return closestWallDistance
+    return [randint(90, 110)*closestWallDistance*(1/100), closestWallDistance]
 
 def SampleNormalDistribution(b) :
     value =0
