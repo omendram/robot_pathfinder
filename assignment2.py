@@ -24,7 +24,7 @@ pygame.display.set_caption("Maze")
 clock = pygame.time.Clock()
 
 angle = 0
-speed = 2
+speed = 1
 
 
 x = 90
@@ -45,15 +45,23 @@ rot1=0
 rot2=0
 trans =0
 directionAngle =0
-noise1 = 0.8 # noise for rot1 and 2
-noise2 = 0.8 # trans noise for rot1 and 2
-noise3 = 0.8 # trans noise for trans
-noise4 = 0.1 # rot noise for trans
+noise1 = 0.3
+# noise for rot1 and 2
+noise2 = 0.3 # trans noise for rot1 and 2
+noise3 = 0.1 # trans noise for trans
+noise4 = 0.3 # rot noise for trans
 
 #    or (y0 >= y1-50 and y0 <= y2+50) wallList = [[10,10,1070,10],[10,10,10,710],[10,710,1070,710],[1070,10,1070,710],[265,10,265,238],[269,10,269,234],[269,234,536,234],
  #          [265,238,532,238],[532,238,532,470],[536,238,536,474],[532,470,265,470],[536,474,265,474],[799,710,799,236],[803,710,803,236],[799,236,803,236]]
 wallList = [[10,10,1070,10],[10,10,10,710],[10,710,1070,710],[1070,10,1070,710],[267,10,267,236],[534,236,534,472],[10,472,534,472],[801,10,801,472]]
 
+
+'''
+
+
+
+
+'''
 
 
 
@@ -61,7 +69,7 @@ wallList = [[10,10,1070,10],[10,10,10,710],[10,710,1070,710],[1070,10,1070,710],
 def updateAngle(x,y,nextx,nexty):
     return math.atan2(nexty-y,nextx-x)
 
-def calcDirection(x,y):
+def calcDirection(x,y,angle):
     rotx=x + (radius-1) * math.cos(math.radians(angle))
     roty=y + (radius-1)* math.sin(math.radians(angle))
     return rotx, roty
@@ -92,7 +100,7 @@ def updatePosition(x,y,xMotion,yMotion):
 
     return x,y
 
-def Motion():
+def Motion(angle):
     xBelieveMotion = speed* math.cos(math.radians(angle))
     yBelieveMotion = speed* math.sin(math.radians(angle))
     
@@ -171,8 +179,6 @@ def centerXYEstimatesFromCensor(sensorEndpoints):
         _y = sensorEndpoints[i][1] - sensorEndpoints[i][3]*math.sin(i * 30*3.14/180+sensorEndpoints[i][2])
         estimatedXY.append([_x, _y])
 
-        #print(_x, " - ", _y)
-
     return estimatedXY
 
 
@@ -212,13 +218,13 @@ def SampleNormalDistribution(b) :
     return value
 
 def sampleMotionModel(rot1,rot2,trans,x,y,angle):
-    #print(rot1)
-    rot1 = rot1 + SampleNormalDistribution(noise1*abs(rot1) + noise2*trans)
-    trans = trans + SampleNormalDistribution(noise3*trans + noise4*(abs(rot1)+abs(rot2)))
-    rot2 = rot2+ SampleNormalDistribution(noise1*abs(rot2) + noise2*trans)
-    x = x + trans*math.cos(math.radians((angle + rot1)%360))
-    y = y + trans*math.sin(math.radians((angle + rot1)%360))
-    angle = (angle + rot1 + rot2)%360
+    rot1 = math.radians(rot1) + SampleNormalDistribution(noise1*abs(math.radians(rot1)) + noise2*trans)
+    t = SampleNormalDistribution(noise3*trans + noise4*(abs(math.radians(rot1)))+abs(math.radians(rot2)))
+    trans = trans + t
+    rot2 = math.radians(rot2)+ SampleNormalDistribution(noise1*abs(math.radians(rot2)) + noise2*trans)
+    x = x + trans*math.cos(math.radians((angle + math.degrees(rot1))%360))
+    y = y + trans*math.sin(math.radians((angle + math.degrees(rot1))%360))
+    angle = (angle + math.degrees(rot1) + math.degrees(rot2))%360
     
 
     return x ,y,angle
@@ -272,19 +278,20 @@ while not done:
        rot1 = updateAngle(believeX, believeY, 130,300)
        rot2 = 0
        rot1 = (math.degrees(rot1) - angle)
-       xBelieveMotion, yBelieveMotion = Motion()
+       xBelieveMotion, yBelieveMotion = Motion(rot1+angle)
        believeX, believeY = updatePosition(believeX,believeY,xBelieveMotion,yBelieveMotion)
-       x,y,angle = sampleMotionModel(rot1,rot2,speed,x,y,angle)
-       rotx,roty = calcDirection(x,y)
-       xpos = int(x)
-       ypos = int(y)
        xpos2 = int(believeX)
        ypos2 = int(believeY)
-       rotx2, roty2 = calcDirection(believeX,believeY)
+       rotx2, roty2 = calcDirection(believeX,believeY, angle+rot1)
+
+       x,y,angle = sampleMotionModel(rot1,rot2,speed,x,y,angle)
+       rotx,roty = calcDirection(x,y,angle)
+       xpos = int(x)
+       ypos = int(y)
+ 
 
         
        
-       #print(believeX, " ",x, " ", believeY, " ", y)
        sensors(xpos,ypos)
 
     else:
@@ -315,7 +322,7 @@ while not done:
     
     # Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
-    clock.tick(30)
+    clock.tick(60)
  
 # Be IDLE friendly. If you forget this line, the program will 'hang'
 # on exit.
