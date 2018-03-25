@@ -157,31 +157,30 @@ def stuck(directionAngle,wall,x,y):
 
 # Sensor Inputs, returns the endpoints of the sensor lines
 def sensors(centerX, centerY):
-    sensorEndpoints = []
+    sensorX = 0
+    sensorY = 0
 
     for i in range(12):
         point1 = centerX, centerY
         distance = getSensorDistance(i,centerX,centerY)
         point2 = centerX + distance[0] * math.cos(i * 30*3.14/180+ math.radians(angle)), centerY + distance[0] * math.sin(i * 30 * 3.14/180+math.radians(angle))
         #pygame.draw.line(screen,  BLACK, point1, point2, 1)
-        sensorEndpoints.append([ centerX + distance[0] * math.cos(i * 30*3.14/180+math.radians(angle)),  centerY + distance[0] * math.sin(i * 30 * 3.14/180+math.radians(angle)), math.radians(angle) ,distance[1]])
-    
-    centerXYEstimatesFromCensor(sensorEndpoints)
-    return sensorEndpoints
+        sensorEpX = centerX + distance[0] * math.cos(i * 30*3.14/180+math.radians(angle))
+        sensorEpY = centerY + distance[0] * math.sin(i * 30 * 3.14/180+math.radians(angle))
+
+        sensorX = sensorX + centerXEstimatesFromCensor(i, sensorEpX, distance[1], math.radians(angle))
+        sensorY = sensorY + centerYEstimatesFromCensor(i, sensorEpY, distance[1], math.radians(angle))
+
+    return sensorX/12, sensorY/12
 
 
 # Return estimates of X and Y based on the sensor readings, including the noise
-# Use this along with odometry estimates to feed into KF and determine the position of the robot
-def centerXYEstimatesFromCensor(sensorEndpoints):
-    estimatedXY = []
+# Use this along with odometry estimates to feed into KF and , determine the position of the robot
+def centerXEstimatesFromCensor(i, sensorEpX, distance, angle):
+    return sensorEpX - distance*math.cos(i * 30*3.14/180 + angle)
 
-    for i in range(12):
-        _x = sensorEndpoints[i][0] - sensorEndpoints[i][3]*math.cos(i * 30*3.14/180+sensorEndpoints[i][2])
-        _y = sensorEndpoints[i][1] - sensorEndpoints[i][3]*math.sin(i * 30*3.14/180+sensorEndpoints[i][2])
-        estimatedXY.append([_x, _y])
-
-    return estimatedXY
-
+def centerYEstimatesFromCensor(i, sensorEpY, distance, angle):
+    return sensorEpY - distance*math.sin(i * 30*3.14/180 + angle)
 
 def getSensorDistance(sensor,x,y):
     closestWall = 0
@@ -229,11 +228,6 @@ def sampleMotionModel(rot1,rot2,trans,x,y,angle):
     
 
     return x ,y,angle
-
-
-
-
-
 
 
 
@@ -286,11 +280,9 @@ while done < 7:
        rotx,roty = calcDirection(x,y,angle)
        xpos = int(x)
        ypos = int(y)
- 
-
         
-       
-       sensors(xpos,ypos)
+        # maeaured values of center x and center y of the robot from sensors
+       kf_X, kf_Y = sensors(xpos,ypos)
 
     else:
         done = done + 1
