@@ -60,7 +60,7 @@ done = 0
 KALMAN STUFF
 '''
 import numpy as np
-import matplotlib.pyplot as plt
+
 
 X = np.matrix('90. 90. 1. 1.').T 
 P = np.matrix(np.eye(4))*1000 # initial uncertainty
@@ -100,11 +100,8 @@ def kalman(x, P, measurement, R, motion, Q, F, H):
         Q: motion noise (same shape as P)
         F: next state function: x_prime = F*x
         H: measurement function: position = H*x
-
         Return: the updated and predicted new values for (x, P)
-
         See also http://en.wikipedia.org/wiki/Kalman_filter
-
         This version of kalman can be applied to many different situations by
         appropriately defining F and H 
     '''
@@ -133,7 +130,6 @@ def demo_kalman_xy():
         x, P = kalman_xy(x, P, meas, R)
         result.append((x[:2]).tolist())
     kalman_x, kalman_y = zip(*result)
-
 '''
 
 
@@ -241,7 +237,7 @@ def sensors(centerX, centerY):
     for i in range(24):
         #point1 = centerX, centerY
         distance = getSensorDistance(i,centerX,centerY)
-        #point2 = centerX + distance[0] * math.cos(i * 30*3.14/180+ math.radians(angle)), centerY + distance[0] * math.sin(i * 30 * 3.14/180+math.radians(angle))
+        #point2 = centerX + distance[0] * math.cos(i * 15*3.14/180+ math.radians(angle)), centerY + distance[0] * math.sin(i * 15 * 3.14/180+math.radians(angle))
         #pygame.draw.line(screen,  BLACK, point1, point2, 1)
         sensorEpX = centerX + distance[0] * math.cos(i * 15*3.14/180+math.radians(angle))
         sensorEpY = centerY + distance[0] * math.sin(i * 15 * 3.14/180+math.radians(angle))
@@ -286,7 +282,7 @@ def getSensorDistance(sensor,x,y):
                 closestWall = i
 
     # Introduce Noise
-    return [randint(70, 130)*closestWallDistance*(1/100), closestWallDistance]
+    return [randint(85, 115)*closestWallDistance*(1/100), closestWallDistance]
 
 def SampleNormalDistribution(b) :
     value =0
