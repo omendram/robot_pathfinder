@@ -24,7 +24,7 @@ pygame.display.set_caption("Maze")
 clock = pygame.time.Clock()
 
 angle = 0
-speed = 1
+speed = 2
 
 
 x = 90
@@ -45,10 +45,9 @@ rot1=0
 rot2=0
 trans =0
 directionAngle =0
-noise1 = 0.2
-# noise for rot1 and 2
+noise1 = 0.4 # noise for rot1 and 2
 noise2 = 0.2 # trans noise for rot1 and 2
-noise3 = 0.1 # trans noise for trans
+noise3 = 0.4 # trans noise for trans
 noise4 = 0.2 # rot noise for trans
 
 #    or (y0 >= y1-50 and y0 <= y2+50) wallList = [[10,10,1070,10],[10,10,10,710],[10,710,1070,710],[1070,10,1070,710],[265,10,265,238],[269,10,269,234],[269,234,536,234],
@@ -58,10 +57,89 @@ pointsToVisit = [[130, 350],[400,350],[400,100],[650,100],[650,600],[950,600],[9
 done = 0
 
 '''
+KALMAN STUFF
+'''
+import numpy as np
+import matplotlib.pyplot as plt
+
+X = np.matrix('90. 90. 1. 1.').T 
+P = np.matrix(np.eye(4))*1000 # initial uncertainty
+R = 0.01**2
+
+def kalman_xy(x, P, measurement, R,
+              motion = np.matrix('0. 0. 0. 0.').T,
+              Q = np.matrix(np.eye(4))):
+    """
+    Parameters:    
+    x: initial state 4-tuple of location and velocity: (x0, x1, x0_dot, x1_dot)
+    P: initial uncertainty convariance matrix
+    measurement: observed position
+    R: measurement noise 
+    motion: external motion added to state vector x
+    Q: motion noise (same shape as P)
+    """
+    return kalman(x, P, measurement, R, motion, Q,
+                  F = np.matrix('''
+                      1. 0. 1. 0.;
+                      0. 1. 0. 1.;
+                      0. 0. 1. 0.;
+                      0. 0. 0. 1.
+                      '''),
+                  H = np.matrix('''
+                      1. 0. 0. 0.;
+                      0. 1. 0. 0.'''))
+
+def kalman(x, P, measurement, R, motion, Q, F, H):
+    '''
+        Parameters:
+        x: initial state
+        P: initial uncertainty convariance matrix
+        measurement: observed position (same shape as H*x)
+        R: measurement noise (same shape as H)
+        motion: external motion added to state vector x
+        Q: motion noise (same shape as P)
+        F: next state function: x_prime = F*x
+        H: measurement function: position = H*x
+
+        Return: the updated and predicted new values for (x, P)
+
+        See also http://en.wikipedia.org/wiki/Kalman_filter
+
+        This version of kalman can be applied to many different situations by
+        appropriately defining F and H 
+    '''
+    # UPDATE x, P based on measurement m    
+    # distance between measured and current position-belief
+    y = np.matrix(measurement).T - H * x
+    S = H * P * H.T + R  # residual convariance
+    K = P * H.T * S.I    # Kalman gain
+    x = x + K*y
+    I = np.matrix(np.eye(F.shape[0])) # identity matrix
+    P = (I - K*H)*P
+
+    # PREDICT x, P based on motion
+    x = F*x + motion
+    P = F*P*F.T + Q
+
+    return x, P
+
+'''
+def demo_kalman_xy():
+    x = np.matrix('0. 0. 0. 0.').T 
+    P = np.matrix(np.eye(4))*1000 # initial uncertainty
+    result = []
+    R = 0.01**2
+    for meas in zip(observed_x, observed_y):
+        x, P = kalman_xy(x, P, meas, R)
+        result.append((x[:2]).tolist())
+    kalman_x, kalman_y = zip(*result)
+
+'''
 
 
 
-
+'''
+KALMAN STUFF ENDS HERE
 '''
 
 
@@ -160,27 +238,27 @@ def sensors(centerX, centerY):
     sensorX = 0
     sensorY = 0
 
-    for i in range(12):
-        point1 = centerX, centerY
+    for i in range(24):
+        #point1 = centerX, centerY
         distance = getSensorDistance(i,centerX,centerY)
-        point2 = centerX + distance[0] * math.cos(i * 30*3.14/180+ math.radians(angle)), centerY + distance[0] * math.sin(i * 30 * 3.14/180+math.radians(angle))
+        #point2 = centerX + distance[0] * math.cos(i * 30*3.14/180+ math.radians(angle)), centerY + distance[0] * math.sin(i * 30 * 3.14/180+math.radians(angle))
         #pygame.draw.line(screen,  BLACK, point1, point2, 1)
-        sensorEpX = centerX + distance[0] * math.cos(i * 30*3.14/180+math.radians(angle))
-        sensorEpY = centerY + distance[0] * math.sin(i * 30 * 3.14/180+math.radians(angle))
+        sensorEpX = centerX + distance[0] * math.cos(i * 15*3.14/180+math.radians(angle))
+        sensorEpY = centerY + distance[0] * math.sin(i * 15 * 3.14/180+math.radians(angle))
 
         sensorX = sensorX + centerXEstimatesFromCensor(i, sensorEpX, distance[1], math.radians(angle))
         sensorY = sensorY + centerYEstimatesFromCensor(i, sensorEpY, distance[1], math.radians(angle))
 
-    return sensorX/12, sensorY/12
+    return sensorX/24, sensorY/24
 
 
 # Return estimates of X and Y based on the sensor readings, including the noise
 # Use this along with odometry estimates to feed into KF and , determine the position of the robot
 def centerXEstimatesFromCensor(i, sensorEpX, distance, angle):
-    return sensorEpX - distance*math.cos(i * 30*3.14/180 + angle)
+    return sensorEpX - distance*math.cos(i * 15*3.14/180 + angle)
 
 def centerYEstimatesFromCensor(i, sensorEpY, distance, angle):
-    return sensorEpY - distance*math.sin(i * 30*3.14/180 + angle)
+    return sensorEpY - distance*math.sin(i * 15*3.14/180 + angle)
 
 def getSensorDistance(sensor,x,y):
     closestWall = 0
@@ -197,7 +275,7 @@ def getSensorDistance(sensor,x,y):
 
  
         line1 = LineString([(x1,y1), (x2,y2)])
-        line2 = LineString([(x,y), (x + 1000 * math.cos(sensor * 30*3.14/180+math.radians(angle)), y + 1000 * math.sin(sensor * 30 * 3.14/180+math.radians(angle)))])
+        line2 = LineString([(x,y), (x + 1000 * math.cos(sensor * 15*3.14/180+math.radians(angle)), y + 1000 * math.sin(sensor * 15 * 3.14/180+math.radians(angle)))])
         point = line1.intersection(line2)
         point = numpy.array(point)
         
@@ -208,7 +286,7 @@ def getSensorDistance(sensor,x,y):
                 closestWall = i
 
     # Introduce Noise
-    return [randint(90, 110)*closestWallDistance*(1/100), closestWallDistance]
+    return [randint(70, 130)*closestWallDistance*(1/100), closestWallDistance]
 
 def SampleNormalDistribution(b) :
     value =0
@@ -266,29 +344,32 @@ while done < 7:
 
     
 
-    if (believeY < pointsToVisit[done][1]-1 or believeY > pointsToVisit[done][1]+1) or (believeX < pointsToVisit[done][0]-1 or believeX >pointsToVisit[done][0]+1):
-       rot1 = updateAngle(believeX, believeY, pointsToVisit[done][0],pointsToVisit[done][1])
-       rot2 = 0
-       rot1 = (math.degrees(rot1) - angle)
-       xBelieveMotion, yBelieveMotion = Motion(rot1+angle)
-       believeX, believeY = updatePosition(believeX,believeY,xBelieveMotion,yBelieveMotion)
-       xpos2 = int(believeX)
-       ypos2 = int(believeY)
-       rotx2, roty2 = calcDirection(believeX,believeY, angle+rot1)
+    if (believeY < pointsToVisit[done][1]-3 or believeY > pointsToVisit[done][1]+3) or (believeX < pointsToVisit[done][0]-3 or believeX >pointsToVisit[done][0]+3):
+        rot1 = updateAngle(believeX, believeY, pointsToVisit[done][0],pointsToVisit[done][1])
+        rot2 = 0
+        rot1 = (math.degrees(rot1) - angle)
+        xBelieveMotion, yBelieveMotion = Motion(rot1+angle)
+        believeX, believeY = updatePosition(believeX,believeY,xBelieveMotion,yBelieveMotion)
 
-       x,y,angle = sampleMotionModel(rot1,rot2,speed,x,y,angle)
-       rotx,roty = calcDirection(x,y,angle)
-       xpos = int(x)
-       ypos = int(y)
-        
-        # maeaured values of center x and center y of the robot from sensors
-       kf_X, kf_Y = sensors(xpos,ypos)
+        x,y,angle = sampleMotionModel(rot1,rot2,speed,x,y,angle)
+        rotx,roty = calcDirection(x,y,angle)
+        xpos = int(x)
+        ypos = int(y)
+
+        measurementX, measurementY = sensors(xpos,ypos)
+        X, P = kalman_xy(X, P, (measurementX, measurementY) , R)
+
+        believeX = X[0, 0]
+        believeY = X[1, 0]
+
+        xpos2 = int(believeX)
+        ypos2 = int(believeY)
+        rotx2, roty2 = calcDirection(believeX,believeY, angle+rot1)
 
     else:
         done = done + 1
 
- 
-        
+    
     
  #   xpos,ypos,x,y = updatePosition(x,y,xMotion,yMotion,angle)
  #   angle = updateAngle(oldx,oldy,x,y)
@@ -296,7 +377,7 @@ while done < 7:
 
     circle = pygame.draw.circle(screen, GREEN , (xpos2,ypos2), radius,0)
     circle = pygame.draw.circle(screen, BLACK , (xpos2,ypos2), radius,2)
-    line = pygame.draw.line(screen,BLACK, (xpos2,ypos2),(rotx2, roty2),2)
+    #line = pygame.draw.line(screen,BLACK, (xpos2,ypos2),(rotx2, roty2),2)
 
     
     circle = pygame.draw.circle(screen, WHITE , (xpos,ypos), radius,0)
