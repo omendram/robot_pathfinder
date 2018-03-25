@@ -45,16 +45,17 @@ rot1=0
 rot2=0
 trans =0
 directionAngle =0
-noise1 = 0.3
+noise1 = 0.2
 # noise for rot1 and 2
-noise2 = 0.3 # trans noise for rot1 and 2
+noise2 = 0.2 # trans noise for rot1 and 2
 noise3 = 0.1 # trans noise for trans
-noise4 = 0.3 # rot noise for trans
+noise4 = 0.2 # rot noise for trans
 
 #    or (y0 >= y1-50 and y0 <= y2+50) wallList = [[10,10,1070,10],[10,10,10,710],[10,710,1070,710],[1070,10,1070,710],[265,10,265,238],[269,10,269,234],[269,234,536,234],
  #          [265,238,532,238],[532,238,532,470],[536,238,536,474],[532,470,265,470],[536,474,265,474],[799,710,799,236],[803,710,803,236],[799,236,803,236]]
 wallList = [[10,10,1070,10],[10,10,10,710],[10,710,1070,710],[1070,10,1070,710],[267,10,267,236],[534,236,534,472],[10,472,534,472],[801,10,801,472]]
-
+pointsToVisit = [[130, 350],[400,350],[400,100],[650,100],[650,600],[950,600],[950,100]]
+done = 0
 
 '''
 
@@ -162,7 +163,7 @@ def sensors(centerX, centerY):
         point1 = centerX, centerY
         distance = getSensorDistance(i,centerX,centerY)
         point2 = centerX + distance[0] * math.cos(i * 30*3.14/180+ math.radians(angle)), centerY + distance[0] * math.sin(i * 30 * 3.14/180+math.radians(angle))
-        pygame.draw.line(screen,  BLACK, point1, point2, 1)
+        #pygame.draw.line(screen,  BLACK, point1, point2, 1)
         sensorEndpoints.append([ centerX + distance[0] * math.cos(i * 30*3.14/180+math.radians(angle)),  centerY + distance[0] * math.sin(i * 30 * 3.14/180+math.radians(angle)), math.radians(angle) ,distance[1]])
     
     centerXYEstimatesFromCensor(sensorEndpoints)
@@ -246,7 +247,7 @@ stuckInWall = 0;
 
 # Loop until the user clicks the close button.
 done = False
-while not done:
+while done < 7:
     # Set the screen background
     screen.fill(WHITE)
 
@@ -260,7 +261,7 @@ while not done:
             if (stuckInWall > 0 and i >3):
                 x,y = stuck(directionAngle,i,x,y)
                 xMotion,yMotion,directionAngle = changeDirection(xMotion,yMotion,directionAngle,i)
-                updatePosition(x,y,xMotion,yMotion,angle)
+                updatePosition(x,y,xMotion,yMotion)
                 break
             
             stuckInWall = 3
@@ -269,13 +270,10 @@ while not done:
             break
 
 
-    for event in pygame.event.get():   # User did something
-        if event.type == pygame.QUIT:  # If user clicked close
-            done = True   # Flag that we are done so we exit this loop
+    
 
-
-    if (believeY < 299 or believeY > 301) or (believeX < 129 or believeX >131):
-       rot1 = updateAngle(believeX, believeY, 130,300)
+    if (believeY < pointsToVisit[done][1]-1 or believeY > pointsToVisit[done][1]+1) or (believeX < pointsToVisit[done][0]-1 or believeX >pointsToVisit[done][0]+1):
+       rot1 = updateAngle(believeX, believeY, pointsToVisit[done][0],pointsToVisit[done][1])
        rot2 = 0
        rot1 = (math.degrees(rot1) - angle)
        xBelieveMotion, yBelieveMotion = Motion(rot1+angle)
@@ -295,7 +293,7 @@ while not done:
        sensors(xpos,ypos)
 
     else:
-        done = True
+        done = done + 1
 
  
         
@@ -311,7 +309,7 @@ while not done:
     
     circle = pygame.draw.circle(screen, WHITE , (xpos,ypos), radius,0)
     circle = pygame.draw.circle(screen, BLACK , (xpos,ypos), radius,2)
-    line = pygame.draw.line(screen,BLACK, (xpos,ypos),(rotx, roty),2)
+ #   line = pygame.draw.line(screen,BLACK, (xpos,ypos),(rotx, roty),2)
 
 
     if (x > 1080 or x< 0 or y >720 or y < 0):
@@ -319,7 +317,10 @@ while not done:
         y= 100
     if stuckInWall > 0:
         stuckInWall = stuckInWall -1
-    
+    for event in pygame.event.get():   # User did something
+        if event.type == pygame.QUIT:  # If user clicked close
+            done = 8
+               # Flag that we are done so we exit this loop
     # Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
     clock.tick(60)
