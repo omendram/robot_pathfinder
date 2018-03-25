@@ -221,8 +221,8 @@ def calcDirection(x,y,angle):
     return int(rotx), int(roty)
 
 def moveWithNoise(pX,pY,pAngle):
-    noisySpeed = SPEED * uniform(1-SPEEDNOISE,1+SPEEDNOISE)
-    noisyAngle = ((pAngle + 2 * math.pi) * uniform(1-ROTNOISE,1+ROTNOISE)) % (2*math.pi)
+    noisySpeed = SPEED * (1+sampleNormalDistribution(SPEEDNOISE))
+    noisyAngle = ((pAngle + 2 * math.pi) * (1+sampleNormalDistribution(ROTNOISE))) % (2*math.pi)
     x = pX + noisySpeed * math.cos(noisyAngle)
     y = pY + noisySpeed * math.sin(noisyAngle)
     return x,y,noisyAngle
@@ -231,6 +231,13 @@ def prepareKFPredParams(x,y,xM,yM):
     kf_X = array([x,y,xM,yM])
     kf_U = array([xM,yM])
     return kf_X,kf_U
+
+def sampleNormalDistribution(b) :
+    value = 0
+    for i in range(0,12):
+        value = value + uniform(-b,b)
+        value = value/2
+    return value
 
 # Loop until the user clicks the close button.
 while not done:
