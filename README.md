@@ -2,6 +2,7 @@
 This is the solution for the ASSIGNMENT 2 from Group No. 9. 
 
 In order to run the python script (named as assignment2.py), the OS would need the following dependencies resolved:
+	
 	1. Python3
 	2. Numpy
 	3. PyGame
