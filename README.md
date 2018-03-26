@@ -12,7 +12,9 @@ The Video Report contains a number simulations under different noise and speed v
 
 The noise / speed value of simulations are given as follows:
 
+
 Case I: High Noise - High Speed
+
 	Noise Values: 
 		noise1 = 0.4 # noise for rot1 and 2
 		noise2 = 0.2 # trans noise for rot1 and 2
@@ -22,6 +24,7 @@ Case I: High Noise - High Speed
 		speed = 5
 
 Case II: Medium Noise - High Speed
+	
 	Noise Values: 
 		noise1 = 0.2 # noise for rot1 and 2
 		noise2 = 0.1 # trans noise for rot1 and 2
@@ -31,6 +34,7 @@ Case II: Medium Noise - High Speed
 		speed = 5
 
 Case III: No Noise - High Speed
+
 	Noise Values:
 		noise1 = 0.0 # noise for rot1 and 2
 		noise2 = 0.0 # trans noise for rot1 and 2
@@ -40,6 +44,7 @@ Case III: No Noise - High Speed
 		speed = 5
 
 Case IV: Medium Noise - Low Speed
+
 	Noise Values:
 		noise1 = 0.2 # noise for rot1 and 2
 		noise2 = 0.1 # trans noise for rot1 and 2
@@ -49,6 +54,7 @@ Case IV: Medium Noise - Low Speed
 		speed = 2
 
 Case V: Very High Speed - Medium Noise 
+
 	Noise Values:
 		noise1 = 0.3 # noise for rot1 and 2
 		noise2 = 0.1 # trans noise for rot1 and 2
