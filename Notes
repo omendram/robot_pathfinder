@@ -1,0 +1,26 @@
+Notes Assignment 2
+
+
+This is the second assignment in ARS. We are group number 9. Our task was to implement a robot moving with different kinds of noise which is filtered by a Kalman filter. 
+
+The knowledge of the robot in regards to its position is ambiguous, as it can not trust its sensors or wheels specifically for absolute values. Our intial predicted X [state values] is based on the encoded wheels information, which we use as the state matrix for Kalman Filter.
+
+
+We've implemented a Kalman Filter routine which first initializes the state matrices as default values (such as the starting positions and speed), initial Covariance as an Identity Matrix, afterwards it takes in the estimate of the position and the measured values of X. It combines these two with the Covariance Matrix using Kalman Filter algorithm to predict much more reliable values of X. 
+
+
+In our code the measured values of X represents the noisy estimates of robot's position through the sensors and the estimated X values are the robot's estimation through its noisy wheels. 
+
+
+These values are passed to the Kalman Filter routines and the values returns are used to update the belief of robot's position (local data), this method is applied recursively for each step of the robot's motion. The correction step can also be observed on the simulation where the belief of robot's position is being updated contstantly.
+
+
+The first clip shows our robot moving with high speed and high noise. First of all, an explanation of the different colors: The white one is the real position, the green one is the estimated position and the trail of pink circles visualize our previous estimated positions. It moves by calculating the angle from its current estimated position to the coordinates of its next point of interest which is then mingled with noise. It starts from the top left and continues its journey through our maze to the top right corner. 
+
+
+In our next clip we use the same speed but only applied half the noise. 
+The third clip shows the robot moving at high speed without any noise. As one can see the path is quite straight. The visible offset is caused by faulty sensor data. 
+In the next clip we set the speed to a low level and use a medium amount of noise. Due to the low speed the robot takes more steps which allows more measurements. This smoothens the path.  
+The fastest possible speed for our robot influenced by medium noise is displayed in clip 5. This pushes the robot close to the mazes limits. 
+Our last clip proves what would happen if we refrained from using the Kalman filter.   
+ 
